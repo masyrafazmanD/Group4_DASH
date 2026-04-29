@@ -1,4 +1,4 @@
-name: Weather Report
+name: Exhange Rate Report
 
 on:
   schedule:
