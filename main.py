@@ -7,9 +7,9 @@ from Step4_email import send_email
 def check_alert(rate):
     # Define threshold logic
     if rate > 3.90:
-        return "HIGH"
+        return "MYR Weak"
     elif rate < 3.80:
-        return "LOW"
+        return "MYR Strong"
     return None
 
 
