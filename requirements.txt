@@ -1,7 +1,4 @@
 requests
-json
 openpyxl
-os
 sqlite3
 python-dotenv
-smtplib
