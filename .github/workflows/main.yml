@@ -1,9 +1,12 @@
 name: Exchange Rate Tracker
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   schedule:
-    - cron: "*/5 * * * *"   # every 5 minutes
-  workflow_dispatch:        # manual trigger
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
 
 jobs:
   run:
@@ -21,7 +24,7 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
-      - name: Run Main Pipeline
+      - name: Run Pipeline
         env:
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
