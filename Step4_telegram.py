@@ -1,14 +1,18 @@
 # ============================================================
-# step5_telegram.py
-# WHAT  : Send a Telegram message notification via Bot API
+# Step5_telegram.py
+# WHAT  : Send Telegram notification for Exchange Rate Alert
 #
 # SETUP (do this once):
 #   1. Open Telegram → search @BotFather → send /newbot
-#   2. Follow prompts → copy the bot TOKEN it gives you
-#   3. Start a chat with your new bot (send it any message)
-#   4. Visit: https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates
-#   5. Find "chat" → "id" in the response → copy that number
-#   6. Add both to your .env file (see keys below)
+#   2. Copy BOT TOKEN
+#   3. Start chat with your bot (send any message)
+#   4. Visit:
+#      https://api.telegram.org/bot<TOKEN>/getUpdates
+#   5. Copy "chat.id"
+#   6. Add both to your .env file:
+#
+#      TELEGRAM_BOT_TOKEN=xxxx
+#      TELEGRAM_CHAT_ID=xxxx
 # ============================================================
 
 import requests
@@ -23,69 +27,78 @@ TELEGRAM_CHAT_ID   = os.getenv("TELEGRAM_CHAT_ID")
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
 
 
-def send_telegram_notification(record: dict) -> bool:
+def send_telegram_notification(record: dict, alert_type: str) -> bool:
     """
-    Send a Telegram message with weather record details.
+    Send Telegram alert message for exchange rate monitoring.
 
     Args:
-        record: dict with keys { id, data, created_at }
+        record: dict with keys
+            { id, base, target, rate, created_at }
+        alert_type: "HIGH" or "LOW"
 
     Returns:
         True if sent successfully, False otherwise
     """
 
-    weather    = record["data"]
     record_id  = record["id"]
+    base       = record["base"]
+    target     = record["target"]
+    rate       = record["rate"]
     created_at = record["created_at"]
 
+    # Choose icon based on condition
+    icon = "🔴" if alert_type == "HIGH" else "🔵"
+
     message = (
-        f"<b>Weather Report Saved</b>\n"
-        f"Record ID : <code>{record_id}</code>\n"
-        f"Saved At  : {created_at}\n\n"
-        f"<b>City        :</b> {weather['city']}, {weather['country']}\n"
-        f"<b>Temperature :</b> {weather['temperature_c']}C (Feels like {weather['feels_like_c']}C)\n"
-        f"<b>Condition   :</b> {weather['weather_desc']}\n"
-        f"<b>Humidity    :</b> {weather['humidity_percent']}%\n"
-        f"<b>Wind Speed  :</b> {weather['wind_speed_kmph']} km/h\n\n"
-        f"Excel report saved to: output/weather_report.xlsx"
+        f"{icon} <b>Exchange Alert Triggered</b>\n\n"
+        f"<b>Condition:</b> {alert_type}\n\n"
+
+        f"<b>Record ID:</b> <code>{record_id}</code>\n"
+        f"<b>Time:</b> {created_at}\n\n"
+
+        f"<b>Currency:</b> {base} → {target}\n"
+        f"<b>Rate:</b> <code>{rate}</code>\n\n"
+
+        f"📊 Data saved to system (DB + Excel)"
     )
 
     payload = {
-        "chat_id":    TELEGRAM_CHAT_ID,
-        "text":       message,
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message,
         "parse_mode": "HTML",
     }
 
     try:
         print("[TELEGRAM] Sending notification...")
-        response = requests.post(TELEGRAM_API_URL, json=payload, timeout=10)
+
+        response = requests.post(
+            TELEGRAM_API_URL,
+            json=payload,
+            timeout=10
+        )
+
         response.raise_for_status()
-        print(f"[TELEGRAM] Notification sent (chat_id: {TELEGRAM_CHAT_ID})")
+
+        print(f"[TELEGRAM] ✅ Sent (chat_id: {TELEGRAM_CHAT_ID})")
         return True
 
     except requests.exceptions.HTTPError as e:
         print(f"[TELEGRAM] HTTP error: {e} — Response: {response.text}")
         return False
+
     except Exception as e:
         print(f"[TELEGRAM] Failed to send notification: {e}")
         return False
 
 
-# ── Run this file directly to test ───────────────────────────
+# ✅ Test block
 if __name__ == "__main__":
     test_record = {
-        "id": 99,
-        "created_at": "2025-01-15 10:30:00",
-        "data": {
-            "city": "KualaLumpur",
-            "country": "Malaysia",
-            "temperature_c": 32,
-            "feels_like_c": 38,
-            "humidity_percent": 80,
-            "wind_speed_kmph": 15,
-            "weather_desc": "Partly Cloudy",
-            "visibility_km": 10,
-            "scraped_at": "2025-01-15 10:30:00",
-        }
+        "id": 1,
+        "base": "USD",
+        "target": "MYR",
+        "rate": 4.82,
+        "created_at": "2026-04-22 10:50:00"
     }
-    send_telegram_notification(test_record)
+
+    send_telegram_notification(test_record, "HIGH")
