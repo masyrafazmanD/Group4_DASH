@@ -2,6 +2,8 @@ from Step1_scrap import scrap_data
 from Step3_db import init_db, save_db
 from Step2_excel import save_to_excel
 #from Step4_email import send_email
+from Step4_telegram import send_telegram_notification
+
 
 
 def check_alert(rate):
@@ -36,6 +38,8 @@ def main():
         print(f"⚠️ ALERT triggered: {alert_type}")
         record = save_db(data)   # Save first so email has DB ID
         # send_email(record)
+        send_telegram_notification(record, alert_type)
+        
     else:
         print("✅ No alert triggered")
         record = save_db(data)
