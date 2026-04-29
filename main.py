@@ -1,7 +1,7 @@
 from Step1_scrap import scrap_data
 from Step3_db import init_db, save_db
 from Step2_excel import save_to_excel
-from Step4_email import send_email
+#from Step4_email import send_email
 
 
 def check_alert(rate):
@@ -35,7 +35,7 @@ def main():
     if alert_type:
         print(f"⚠️ ALERT triggered: {alert_type}")
         record = save_db(data)   # Save first so email has DB ID
-        send_email(record)
+        # send_email(record)
     else:
         print("✅ No alert triggered")
         record = save_db(data)
@@ -43,7 +43,7 @@ def main():
     # Step 4: Save to Excel
     save_to_excel(record)
 
-    print("✅ Pipeline completed")
+    print("✅ Successfully run the pipeline")
 
 
 if __name__ == "__main__":
